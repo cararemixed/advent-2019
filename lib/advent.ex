@@ -9,7 +9,6 @@ defmodule Advent do
     |> FuelCalculator.parse_module_masses()
     |> Enum.map(&FuelCalculator.naive_mass_to_fuel/1)
     |> FuelCalculator.total_fuel()
-    |> IO.puts()
   end
 
   def star2 do
@@ -22,6 +21,5 @@ defmodule Advent do
     |> FuelCalculator.parse_module_masses()
     |> Enum.map(&FuelCalculator.mass_to_fuel/1)
     |> FuelCalculator.total_fuel()
-    |> IO.puts()
   end
 end
