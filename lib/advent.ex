@@ -1,6 +1,6 @@
 defmodule Advent do
   def star1 do
-    {:ok, content} = File.read("priv/star1/masses.txt")
+    {:ok, content} = File.read("priv/day1/masses.txt")
     star1(content)
   end
 
@@ -12,7 +12,7 @@ defmodule Advent do
   end
 
   def star2 do
-    {:ok, content} = File.read("priv/star1/masses.txt")
+    {:ok, content} = File.read("priv/day1/masses.txt")
     star2(content)
   end
 
