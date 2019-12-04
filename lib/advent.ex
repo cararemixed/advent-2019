@@ -63,4 +63,28 @@ defmodule Advent do
       {noun, verb} -> 100 * noun + verb
     end
   end
+
+  def star5 do
+    {:ok, content} = File.read("priv/day3/wires.txt")
+    star5(content)
+  end
+
+  def star5(input) do
+    [wire1, wire2 | _] = String.split(input, "\n")
+    grid1 = WireGrid.route_wire(wire1)
+    grid2 = WireGrid.route_wire(wire2)
+    WireGrid.closest_crossing(grid1, grid2)
+  end
+
+  def star6 do
+    {:ok, content} = File.read("priv/day3/wires.txt")
+    star6(content)
+  end
+
+  def star6(input) do
+    [wire1, wire2 | _] = String.split(input, "\n")
+    grid1 = WireGrid.route_wire(wire1)
+    grid2 = WireGrid.route_wire(wire2)
+    WireGrid.steps_to_crossing(grid1, grid2)
+  end
 end
