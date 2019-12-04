@@ -3,4 +3,5 @@ defmodule DocExamplesTest do
   doctest FuelCalculator
   doctest Intcode
   doctest WireGrid
+  doctest PasswordCracker
 end

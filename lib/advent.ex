@@ -87,4 +87,24 @@ defmodule Advent do
     grid2 = WireGrid.route_wire(wire2)
     WireGrid.steps_to_crossing(grid1, grid2)
   end
+
+  def star7 do
+    star7(359_282, 820_401)
+  end
+
+  def star7(lower_bound, upper_bound) do
+    PasswordCracker.stream_passwords(lower_bound)
+    |> Stream.take_while(&(&1 <= upper_bound))
+    |> Enum.count()
+  end
+
+  def star8 do
+    star8(359_282, 820_401)
+  end
+
+  def star8(lower_bound, upper_bound) do
+    PasswordCracker.stream_passwords(lower_bound, false)
+    |> Stream.take_while(&(&1 <= upper_bound))
+    |> Enum.count()
+  end
 end
