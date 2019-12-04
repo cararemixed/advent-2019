@@ -17,7 +17,7 @@ defmodule Intcode do
     program =
       input
       |> String.split(",")
-      |> Enum.map(&(&1 |> String.trim() |> String.to_integer()))
+      |> Enum.map(&(String.trim(&1) |> String.to_integer()))
       |> Stream.with_index()
       |> Enum.reduce(%{}, fn {int, idx}, program ->
         Map.put(program, idx, int)
