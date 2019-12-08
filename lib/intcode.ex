@@ -285,9 +285,9 @@ defmodule Intcode do
 
     operands =
       cond do
-        op == 1 or op == 2 or op == 7 or op == 8 -> 1..3
-        op == 5 or op == 6 -> 1..2
-        op == 3 or op == 4 -> [1]
+        op in [1, 2, 7, 8] -> 1..3
+        op in [5, 6] -> 1..2
+        op in [3, 4] -> [1]
         op == 99 -> []
         true -> raise(RuntimeError, "unknown operation: #{op}")
       end
