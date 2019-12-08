@@ -107,4 +107,34 @@ defmodule Advent do
     |> Stream.take_while(&(&1 <= upper_bound))
     |> Enum.count()
   end
+
+  def star9 do
+    {:ok, content} = File.read("priv/day5/diag.txt")
+    star9(content)
+  end
+
+  def star9(input) do
+    intcode = Intcode.load_program(input)
+
+    intcode
+    |> Intcode.attach(DiagnosticModule, user_input: 1)
+    |> Intcode.run()
+    |> DiagnosticModule.output()
+    |> List.last()
+  end
+
+  def star10 do
+    {:ok, content} = File.read("priv/day5/diag.txt")
+    star10(content)
+  end
+
+  def star10(input) do
+    intcode = Intcode.load_program(input)
+
+    intcode
+    |> Intcode.attach(DiagnosticModule, user_input: 5)
+    |> Intcode.run()
+    |> DiagnosticModule.output()
+    |> List.last()
+  end
 end
