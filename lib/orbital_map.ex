@@ -1,21 +1,6 @@
 defmodule OrbitalMap do
   @moduledoc """
   Parse and manipulate relations of orbital bodies.
-
-  ## Example: transitive orbits
-
-    iex> orbits = "COM)B\\nB)C\\nC)D\\nD)E\\nE)F\\nB)G\\nG)H\\nD)I\\nE)J\\nJ)K\\nK)L"
-    iex> map = OrbitalMap.parse_chart(orbits)
-    iex> map |> OrbitalMap.compute_transitive_orbits |> MapSet.size
-    42
-
-  ## Example: path finding
-
-    iex> orbits = "COM)B\\nB)C\\nC)D\\nD)E\\nE)F\\nB)G\\nG)H\\nD)I\\nE)J\\nJ)K\\nK)L\\nK)YOU\\nI)SAN"
-    iex> map = OrbitalMap.parse_chart(orbits)
-    iex> map |> OrbitalMap.minimum_transfer_cost("YOU", "SAN")
-    4
-
   """
 
   def parse_chart(input) do
@@ -28,6 +13,18 @@ defmodule OrbitalMap do
     end)
   end
 
+  @doc """
+  Compute the transfer cost (number of transfers) to move the starting object
+  to the same orbit as the target object.
+
+  ## Example
+
+    iex> orbits = "COM)B\\nB)C\\nC)D\\nD)E\\nE)F\\nB)G\\nG)H\\nD)I\\nE)J\\nJ)K\\nK)L\\nK)YOU\\nI)SAN"
+    iex> map = OrbitalMap.parse_chart(orbits)
+    iex> map |> OrbitalMap.minimum_transfer_cost("YOU", "SAN")
+    4
+
+  """
   def minimum_transfer_cost(orbital_map, start, target) do
     current_orbit = find_orbit(orbital_map, start)
     target_orbit = find_orbit(orbital_map, target)
@@ -35,6 +32,18 @@ defmodule OrbitalMap do
     costs[target_orbit]
   end
 
+  @doc """
+  Compute the pairs of objects which transitively orbit: `{body, satellite}`.
+  So if `{"A", "B"}` and `{"B", "C"}` then `{"A", "C"}` is the transitive
+  orbit of C around A via B.
+
+  ## Example: transitive orbits
+
+    iex> orbits = "COM)B\\nB)C\\nC)D\\nD)E\\nE)F\\nB)G\\nG)H\\nD)I\\nE)J\\nJ)K\\nK)L"
+    iex> map = OrbitalMap.parse_chart(orbits)
+    iex> map |> OrbitalMap.compute_transitive_orbits |> MapSet.size
+    42
+  """
   def compute_transitive_orbits(orbital_map) do
     transitive_orbits(orbital_map, ["COM"], MapSet.new())
   end
@@ -52,14 +61,18 @@ defmodule OrbitalMap do
     end
   end
 
-  defp count_transfers(costs, orbital_map, current, cost) do
-    if cost < costs[current] do
-      local_transfers(orbital_map, current)
-      |> Enum.reduce(Map.put(costs, current, cost), fn transfer, costs ->
-        count_transfers(costs, orbital_map, transfer, cost + 1)
-      end)
-    else
-      costs
+  defp count_transfers(current_costs, orbital_map, current, cost) do
+    cond do
+      cost < current_costs[current] ->
+        updated_costs = Map.put(current_costs, current, cost)
+
+        local_transfers(orbital_map, current)
+        |> Enum.reduce(updated_costs, fn transfer, transfer_costs ->
+          count_transfers(transfer_costs, orbital_map, transfer, cost + 1)
+        end)
+
+      true ->
+        current_costs
     end
   end
 

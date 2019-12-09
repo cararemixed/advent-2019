@@ -12,8 +12,7 @@ defmodule DiagnosticModule do
   end
 
   def write(intcode, module, data) do
-    module = %{module | output: [data | module.output]}
-    {:ok, intcode, module}
+    {:ok, intcode, %{module | output: [data | module.output]}}
   end
 
   def new(user_input) do
@@ -21,7 +20,6 @@ defmodule DiagnosticModule do
   end
 
   def output(intcode) do
-    intcode.expansion[DiagnosticModule].output
-    |> Enum.reverse()
+    intcode.expansion[DiagnosticModule].output |> Enum.reverse()
   end
 end

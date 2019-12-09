@@ -152,17 +152,16 @@ defmodule Intcode do
 
   def read(intcode) do
     io_module = intcode.io_module
-    mod_state = intcode.expansion[io_module]
-    {:ok, data, intcode, mod_state} = io_module.read(intcode, mod_state)
-    intcode = put_in(intcode, [Access.key(:expansion), io_module], mod_state)
-    {data, intcode}
+    state = intcode.expansion[io_module]
+    {:ok, data, intcode, state} = io_module.read(intcode, state)
+    {data, put_in(intcode, [Access.key(:expansion), io_module], state)}
   end
 
   def write(intcode, data) do
     io_module = intcode.io_module
-    mod_state = intcode.expansion[io_module]
-    {:ok, intcode, mod_state} = io_module.write(intcode, mod_state, data)
-    intcode |> put_in([Access.key(:expansion), io_module], mod_state)
+    state = intcode.expansion[io_module]
+    {:ok, intcode, state} = io_module.write(intcode, state, data)
+    intcode |> put_in([Access.key(:expansion), io_module], state)
   end
 
   defp step(intcode) do
@@ -172,95 +171,54 @@ defmodule Intcode do
   # Op: add in in out
   defp step(intcode, {1, src1, src2, dest}) do
     sum = input(intcode, src1) + input(intcode, src2)
-
-    intcode =
-      intcode
-      |> output(dest, sum)
-      |> advance_counter(4)
-
-    {:continue, intcode}
+    {:continue, intcode |> output(dest, sum) |> advance_counter(4)}
   end
 
   # Op: multiply in in out
   defp step(intcode, {2, src1, src2, dest}) do
     product = input(intcode, src1) * input(intcode, src2)
-
-    intcode =
-      intcode
-      |> output(dest, product)
-      |> advance_counter(4)
-
-    {:continue, intcode}
+    {:continue, intcode |> output(dest, product) |> advance_counter(4)}
   end
 
   # Op: read_port out
   defp step(intcode, {3, dest}) do
     {input, intcode} = read(intcode)
-
-    intcode =
-      intcode
-      |> output(dest, input)
-      |> advance_counter(2)
-
-    {:continue, intcode}
+    {:continue, intcode |> output(dest, input) |> advance_counter(2)}
   end
 
   # Op: write_port in
   defp step(intcode, {4, src}) do
-    intcode =
-      intcode
-      |> write(input(intcode, src))
-      |> advance_counter(2)
-
-    {:continue, intcode}
+    {:continue, intcode |> write(input(intcode, src)) |> advance_counter(2)}
   end
 
   # Op: jump_if_true in in
   defp step(intcode, {5, test, target}) do
-    intcode =
-      case input(intcode, test) do
-        0 -> intcode |> advance_counter(3)
-        _ -> %{intcode | counter: input(intcode, target)}
-      end
-
-    {:continue, intcode}
+    {:continue,
+     case input(intcode, test) do
+       0 -> intcode |> advance_counter(3)
+       _ -> %{intcode | counter: input(intcode, target)}
+     end}
   end
 
   # Op: jump_if_false in in
   defp step(intcode, {6, test, target}) do
-    intcode =
-      case input(intcode, test) do
-        0 -> %{intcode | counter: input(intcode, target)}
-        _ -> intcode |> advance_counter(3)
-      end
-
-    {:continue, intcode}
+    {:continue,
+     case input(intcode, test) do
+       0 -> %{intcode | counter: input(intcode, target)}
+       _ -> intcode |> advance_counter(3)
+     end}
   end
 
   # Op: less_than in in out
   defp step(intcode, {7, left, right, dest}) do
-    intcode =
-      if input(intcode, left) < input(intcode, right) do
-        intcode |> output(dest, 1)
-      else
-        intcode |> output(dest, 0)
-      end
-      |> advance_counter(4)
-
-    {:continue, intcode}
+    bit = if input(intcode, left) < input(intcode, right), do: 1, else: 0
+    {:continue, intcode |> output(dest, bit) |> advance_counter(4)}
   end
 
   # Op: equals in in out
   defp step(intcode, {8, left, right, dest}) do
-    intcode =
-      if input(intcode, left) == input(intcode, right) do
-        intcode |> output(dest, 1)
-      else
-        intcode |> output(dest, 0)
-      end
-      |> advance_counter(4)
-
-    {:continue, intcode}
+    bit = if input(intcode, left) == input(intcode, right), do: 1, else: 0
+    {:continue, intcode |> output(dest, bit) |> advance_counter(4)}
   end
 
   # Op: halt
@@ -283,7 +241,7 @@ defmodule Intcode do
     op = rem(code, 100)
     modes = div(code, 100)
 
-    operands =
+    offsets =
       cond do
         op in [1, 2, 7, 8] -> 1..3
         op in [5, 6] -> 1..2
@@ -292,18 +250,17 @@ defmodule Intcode do
         true -> raise(RuntimeError, "unknown operation: #{op}")
       end
 
-    [
-      op
-      | for offset <- operands do
-          arg = peek(intcode, intcode.counter + offset)
+    operands =
+      for offset <- offsets do
+        arg = peek(intcode, intcode.counter + offset)
 
-          case decode_mode(modes, offset) do
-            0 -> {:address, arg}
-            1 -> {:immediate, arg}
-          end
+        case decode_mode(modes, offset) do
+          0 -> {:address, arg}
+          1 -> {:immediate, arg}
         end
-    ]
-    |> List.to_tuple()
+      end
+
+    [op | operands] |> List.to_tuple()
   end
 
   defp decode_mode(modes, 1), do: rem(modes, 10)
