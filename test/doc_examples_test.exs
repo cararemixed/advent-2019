@@ -4,4 +4,5 @@ defmodule DocExamplesTest do
   doctest Intcode
   doctest WireGrid
   doctest PasswordCracker
+  doctest OrbitalMap
 end

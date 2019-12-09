@@ -137,4 +137,27 @@ defmodule Advent do
     |> DiagnosticModule.output()
     |> List.last()
   end
+
+  def star11 do
+    {:ok, content} = File.read("priv/day6/map.txt")
+    star11(content)
+  end
+
+  def star11(input) do
+    input
+    |> OrbitalMap.parse_chart()
+    |> OrbitalMap.compute_transitive_orbits()
+    |> MapSet.size()
+  end
+
+  def star12 do
+    {:ok, content} = File.read("priv/day6/map.txt")
+    star12(content)
+  end
+
+  def star12(input) do
+    input
+    |> OrbitalMap.parse_chart()
+    |> OrbitalMap.minimum_transfer_cost("YOU", "SAN")
+  end
 end
