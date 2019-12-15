@@ -102,6 +102,8 @@ defmodule Intcode do
 
   """
 
+  @type t :: %Intcode{}
+
   defstruct memory: %{0 => 99},
             counter: 0,
             expansion: %{},
