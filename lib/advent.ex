@@ -1,10 +1,6 @@
 defmodule Advent do
   def star1 do
-    {:ok, content} = File.read("priv/day1/masses.txt")
-    star1(content)
-  end
-
-  def star1(input) do
+    {:ok, input} = File.read("priv/day1/masses.txt")
     input
     |> FuelCalculator.parse_module_masses()
     |> Enum.map(&FuelCalculator.naive_mass_to_fuel/1)
@@ -12,11 +8,7 @@ defmodule Advent do
   end
 
   def star2 do
-    {:ok, content} = File.read("priv/day1/masses.txt")
-    star2(content)
-  end
-
-  def star2(input) do
+    {:ok, input} = File.read("priv/day1/masses.txt")
     input
     |> FuelCalculator.parse_module_masses()
     |> Enum.map(&FuelCalculator.mass_to_fuel/1)
@@ -24,11 +16,7 @@ defmodule Advent do
   end
 
   def star3 do
-    {:ok, content} = File.read("priv/day2/program1.txt")
-    star3(content)
-  end
-
-  def star3(input) do
+    {:ok, input} = File.read("priv/day2/program1.txt")
     Intcode.load_program(input)
     |> Intcode.poke(1, 12)
     |> Intcode.poke(2, 2)
@@ -37,11 +25,7 @@ defmodule Advent do
   end
 
   def star4 do
-    {:ok, content} = File.read("priv/day2/program1.txt")
-    star4(content)
-  end
-
-  def star4(input) do
+    {:ok, input} = File.read("priv/day2/program1.txt")
     initial = Intcode.load_program(input)
 
     eval = fn intcode, operand, operator ->
@@ -65,11 +49,7 @@ defmodule Advent do
   end
 
   def star5 do
-    {:ok, content} = File.read("priv/day3/wires.txt")
-    star5(content)
-  end
-
-  def star5(input) do
+    {:ok, input} = File.read("priv/day3/wires.txt")
     [wire1, wire2 | _] = String.split(input, "\n")
     grid1 = WireGrid.route_wire(wire1)
     grid2 = WireGrid.route_wire(wire2)
@@ -77,11 +57,7 @@ defmodule Advent do
   end
 
   def star6 do
-    {:ok, content} = File.read("priv/day3/wires.txt")
-    star6(content)
-  end
-
-  def star6(input) do
+    {:ok, input} = File.read("priv/day3/wires.txt")
     [wire1, wire2 | _] = String.split(input, "\n")
     grid1 = WireGrid.route_wire(wire1)
     grid2 = WireGrid.route_wire(wire2)
@@ -89,31 +65,23 @@ defmodule Advent do
   end
 
   def star7 do
-    star7(359_282, 820_401)
-  end
-
-  def star7(lower_bound, upper_bound) do
+    lower_bound = 359_282
+    upper_bound = 820_401
     PasswordCracker.stream_passwords(lower_bound)
     |> Stream.take_while(&(&1 <= upper_bound))
     |> Enum.count()
   end
 
   def star8 do
-    star8(359_282, 820_401)
-  end
-
-  def star8(lower_bound, upper_bound) do
+    lower_bound = 359_282
+    upper_bound = 820_401
     PasswordCracker.stream_passwords(lower_bound, false)
     |> Stream.take_while(&(&1 <= upper_bound))
     |> Enum.count()
   end
 
   def star9 do
-    {:ok, content} = File.read("priv/day5/diag.txt")
-    star9(content)
-  end
-
-  def star9(input) do
+    {:ok, input} = File.read("priv/day5/diag.txt")
     intcode = Intcode.load_program(input)
 
     intcode
@@ -124,11 +92,7 @@ defmodule Advent do
   end
 
   def star10 do
-    {:ok, content} = File.read("priv/day5/diag.txt")
-    star10(content)
-  end
-
-  def star10(input) do
+    {:ok, input} = File.read("priv/day5/diag.txt")
     intcode = Intcode.load_program(input)
 
     intcode
@@ -139,11 +103,7 @@ defmodule Advent do
   end
 
   def star11 do
-    {:ok, content} = File.read("priv/day6/map.txt")
-    star11(content)
-  end
-
-  def star11(input) do
+    {:ok, input} = File.read("priv/day6/map.txt")
     input
     |> OrbitalMap.parse_chart()
     |> OrbitalMap.compute_transitive_orbits()
@@ -151,11 +111,7 @@ defmodule Advent do
   end
 
   def star12 do
-    {:ok, content} = File.read("priv/day6/map.txt")
-    star12(content)
-  end
-
-  def star12(input) do
+    {:ok, input} = File.read("priv/day6/map.txt")
     input
     |> OrbitalMap.parse_chart()
     |> OrbitalMap.minimum_transfer_cost("YOU", "SAN")

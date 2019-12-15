@@ -1,9 +1,14 @@
 defprotocol Intcode.IOModule do
-  @type io_result(state, error_reason) ::
-          {:ok, Intcode.t(), state} | {:error, error_reason}
-  @type io_result(return, state, error_reason) ::
-          {:ok, return, Intcode.t(), state} | {:error, error_reason}
-  @callback boot(Intcode.t(), keyword) :: io_result(term, term)
-  @callback read(Intcode.t(), term) :: io_result(any, term, term)
-  @callback write(Intcode.t(), term, any) :: io_result(term, term)
+  @type boot_result(state) ::
+          {:ok, Intcode.t(), state} | {:error, term}
+
+  @type write_result(state) ::
+          {:ok, Intcode.t(), state} | {:error, term}
+
+  @type read_result(return, state) ::
+          {:ok, return, Intcode.t(), state} | {:error, term}
+
+  @callback boot(Intcode.t(), keyword) :: boot_result(term)
+  @callback read(Intcode.t(), term) :: read_result(any, term)
+  @callback write(Intcode.t(), term, any) :: write_result(term)
 end
