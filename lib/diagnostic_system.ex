@@ -93,6 +93,30 @@ defmodule DiagnosticSystem do
     iex> DiagnosticSystem.run(diag)
     iex> DiagnosticSystem.output(diag)
     1001
+
+  ## Example: Quine
+
+    iex> code = "109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99"
+    iex> {:ok, diag} = DiagnosticSystem.start(code: code, accumulate: true)
+    iex> DiagnosticSystem.run(diag)
+    iex> DiagnosticSystem.output(diag)
+    [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
+
+  ## Example: large numbers
+
+    iex> code = "1102,34915192,34915192,7,4,7,99,0"
+    iex> {:ok, diag} = DiagnosticSystem.start(code: code)
+    iex> DiagnosticSystem.run(diag)
+    iex> DiagnosticSystem.output(diag)
+    1219070632396864
+
+  # Example: output large immediate values
+
+    iex> code = "104,1125899906842624,99"
+    iex> {:ok, diag} = DiagnosticSystem.start(code: code)
+    iex> DiagnosticSystem.run(diag)
+    iex> DiagnosticSystem.output(diag)
+    1125899906842624
   """
 
   defstruct [:intcode, :user_input, :output, :accumulate]
