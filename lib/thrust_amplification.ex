@@ -41,7 +41,6 @@ defmodule ThrustAmplification do
     amps |> List.last() |> Amplifier.output()
   end
 
-  @spec permutations([any]) :: Stream.t([any])
   def permutations(elements) do
     total = factorial(length(@linear_phases))
 
