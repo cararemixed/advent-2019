@@ -90,7 +90,7 @@ defmodule Advent do
     with(
       {:ok, diag} <- DiagnosticSystem.start(user_input: 1),
       :ok <- DiagnosticSystem.run(diag),
-      {:ok, output} <- DiagnosticSystem.output(diag),
+      output <- DiagnosticSystem.output(diag),
       do: output
     )
   end
@@ -99,7 +99,7 @@ defmodule Advent do
     with(
       {:ok, diag} <- DiagnosticSystem.start(user_input: 5),
       :ok <- DiagnosticSystem.run(diag),
-      {:ok, output} <- DiagnosticSystem.output(diag),
+      output <- DiagnosticSystem.output(diag),
       do: output
     )
   end

@@ -8,7 +8,6 @@ defmodule Intcode do
     iex> {:halt, vm} = vm |> Intcode.run
     iex> vm |> Intcode.peek(0)
     3500
-
   """
 
   @type t :: %Intcode{}
