@@ -56,4 +56,8 @@ defmodule AnswersTest do
   test "star 14" do
     assert Advent.star14() == 14_260_332
   end
+
+  test "star 15" do
+    assert Advent.star15() == 1620
+  end
 end

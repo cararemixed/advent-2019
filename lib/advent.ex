@@ -144,4 +144,26 @@ defmodule Advent do
     end)
     |> Enum.max()
   end
+
+  def star15 do
+    {:ok, data} = File.read("priv/day8/rover_password_image.txt")
+    {:ok, image} = SpaceImageFormat.load_image(data, 25, 6)
+
+    layer =
+      image.layers
+      |> Enum.min_by(fn layer ->
+        layer |> Enum.filter(&(&1 == 0)) |> length
+      end)
+
+    IO.inspect(layer)
+    ones = layer |> Enum.filter(&(&1 == 1)) |> length
+    twos = layer |> Enum.filter(&(&1 == 2)) |> length
+    ones * twos
+  end
+
+  def star16 do
+    {:ok, data} = File.read("priv/day8/rover_password_image.txt")
+    {:ok, image} = SpaceImageFormat.load_image(data, 25, 6)
+    SpaceImageFormat.display(image)
+  end
 end
