@@ -20,27 +20,35 @@ defmodule SpaceImageFormat do
       Enum.zip(layers)
       |> Enum.map(fn pixels ->
         pixels
-        |> Tuple.to_list
+        |> Tuple.to_list()
         |> Enum.reduce(2, fn
           color, 2 -> color
           _, foreground -> foreground
         end)
       end)
+
     %{image | layers: [layer]}
   end
 
-  def display(%{layers: [image], width: width}) do
-    image |> Enum.with_index |> Enum.each(fn {pixel, index} ->
-      if index > 0 && rem(index, width) == 0, do: IO.write("\n")
-      case pixel do
-        0 -> IO.write(" ")
-        1 -> IO.write("#")
-      end
-    end)
-    IO.write("\n")
+  def render(%{layers: [image], width: width}) do
+    output =
+      image
+      |> Enum.with_index()
+      |> Enum.map(fn {pixel, index} ->
+        cell =
+          case pixel do
+            0 -> " "
+            1 -> "#"
+          end
+
+        nl = if index > 0 && rem(index, width) == width - 1, do: "\n", else: ""
+        [cell, nl]
+      end)
+
+    IO.iodata_to_binary(output)
   end
 
-  def display(image) do
-    image |> composite |> display
+  def render(image) do
+    image |> composite |> render
   end
 end

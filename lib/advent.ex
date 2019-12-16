@@ -155,7 +155,6 @@ defmodule Advent do
         layer |> Enum.filter(&(&1 == 0)) |> length
       end)
 
-    IO.inspect(layer)
     ones = layer |> Enum.filter(&(&1 == 1)) |> length
     twos = layer |> Enum.filter(&(&1 == 2)) |> length
     ones * twos
@@ -164,6 +163,6 @@ defmodule Advent do
   def star16 do
     {:ok, data} = File.read("priv/day8/rover_password_image.txt")
     {:ok, image} = SpaceImageFormat.load_image(data, 25, 6)
-    SpaceImageFormat.display(image)
+    SpaceImageFormat.render(image)
   end
 end
