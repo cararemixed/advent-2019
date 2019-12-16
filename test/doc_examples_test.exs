@@ -5,4 +5,5 @@ defmodule DocExamplesTest do
   doctest WireGrid
   doctest PasswordCracker
   doctest OrbitalMap
+  doctest ThrustAmplification
 end

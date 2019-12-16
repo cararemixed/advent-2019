@@ -4,112 +4,24 @@ defmodule Intcode do
 
   ## Example program and output:
 
-    iex> vm = Intcode.load_program("1,9,10,3,2,3,11,0,99,30,40,50")
-    iex> vm |> Intcode.run |> Intcode.peek(0)
+    iex> vm = Intcode.load_code("1,9,10,3,2,3,11,0,99,30,40,50")
+    iex> {:halt, vm} = vm |> Intcode.run
+    iex> vm |> Intcode.peek(0)
     3500
-
-  ## Example: output 1 if input is 8 and 0 otherwise
-
-    iex> vm = Intcode.load_program("3,9,8,9,10,9,4,9,99,-1,8")
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: 8)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [1]
-
-    iex> vm = Intcode.load_program("3,9,8,9,10,9,4,9,99,-1,8")
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: 2)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [0]
-
-  ## Example: output 1 if input is less than 8 and 0 otherwise
-
-    iex> vm = Intcode.load_program("3,9,7,9,10,9,4,9,99,-1,8")
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: 2)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [1]
-
-
-    iex> vm = Intcode.load_program("3,9,7,9,10,9,4,9,99,-1,8")
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: 10)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [0]
-
-
-  ## Example: immediate mode, check if input equals 8
-
-    iex> vm = Intcode.load_program("3,3,1108,-1,8,3,4,3,99")
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: 8)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [1]
-
-    iex> vm = Intcode.load_program("3,3,1108,-1,8,3,4,3,99")
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: -8)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [0]
-
-  ## Example: immediate mode, check if input is less than 8
-
-    iex> vm = Intcode.load_program("3,3,1107,-1,8,3,4,3,99")
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: -1)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [1]
-
-    iex> vm = Intcode.load_program("3,3,1107,-1,8,3,4,3,99")
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: 9)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [0]
-
-  ## Example: jump tests, position mode
-
-    iex> vm = Intcode.load_program("3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9")
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: 0)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [0]
-
-    iex> vm = Intcode.load_program("3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9")
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: 10)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [1]
-
-  ## Example: jump tests, immediate mode
-
-    iex> vm = Intcode.load_program("3,3,1105,-1,9,1101,0,0,12,4,12,99,1")
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: 0)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [0]
-
-    iex> vm = Intcode.load_program("3,3,1105,-1,9,1101,0,0,12,4,12,99,1")
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: -2)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [1]
-
-  ## Example: compare to 8
-
-    iex> prg = "3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,"
-    iex> prg = prg <> "1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,"
-    iex> prg = prg <> "999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99"
-    iex> vm = Intcode.load_program(prg)
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: 7)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [999]
-    iex> vm = Intcode.load_program(prg)
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: 8)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [1000]
-    iex> vm = Intcode.load_program(prg)
-    iex> vm = vm |> Intcode.attach(DiagnosticModule, user_input: 9)
-    iex> vm |> Intcode.run |> DiagnosticModule.output
-    [1001]
 
   """
 
   @type t :: %Intcode{}
 
-  defstruct memory: %{0 => 99},
-            counter: 0,
-            expansion: %{},
-            io_module: nil
+  defstruct memory: %{0 => 99}, counter: 0
 
-  def load_program(input, io_module \\ nil) do
+  @spec load_program(binary | {:path, binary}) :: Intcode.t()
+  def load_program(name) do
+    {:ok, input} = File.read("priv/programs/#{name}.txt")
+    load_code(input)
+  end
+
+  def load_code(input) do
     program =
       input
       |> String.split(",")
@@ -119,23 +31,15 @@ defmodule Intcode do
         Map.put(program, idx, int)
       end)
 
-    %Intcode{memory: program, io_module: io_module}
-  end
-
-  def attach(intcode, io_module, props \\ []) do
-    {:ok, intcode, mod_state} = io_module.boot(intcode, props)
-
-    %{
-      intcode
-      | io_module: io_module,
-        expansion: intcode.expansion |> Map.put(io_module, mod_state)
-    }
+    %Intcode{memory: program}
   end
 
   def run(intcode) do
     case step(intcode) do
       {:continue, intcode} -> run(intcode)
-      {:halt, intcode} -> intcode
+      {:halt, intcode} -> {:halt, intcode}
+      {:read, intcode, {:address, address}} -> {:read, intcode, address}
+      {:write, intcode, output} -> {:write, intcode, input(intcode, output)}
     end
   end
 
@@ -150,20 +54,6 @@ defmodule Intcode do
     # Use put to allow any address to be used
     # even if it was beyond the program size.
     %{intcode | memory: Map.put(intcode.memory, address, value)}
-  end
-
-  def read(intcode) do
-    io_module = intcode.io_module
-    state = intcode.expansion[io_module]
-    {:ok, data, intcode, state} = io_module.read(intcode, state)
-    {data, put_in(intcode, [Access.key(:expansion), io_module], state)}
-  end
-
-  def write(intcode, data) do
-    io_module = intcode.io_module
-    state = intcode.expansion[io_module]
-    {:ok, intcode, state} = io_module.write(intcode, state, data)
-    intcode |> put_in([Access.key(:expansion), io_module], state)
   end
 
   defp step(intcode) do
@@ -184,13 +74,12 @@ defmodule Intcode do
 
   # Op: read_port out
   defp step(intcode, {3, dest}) do
-    {input, intcode} = read(intcode)
-    {:continue, intcode |> output(dest, input) |> advance_counter(2)}
+    {:read, intcode |> advance_counter(2), dest}
   end
 
   # Op: write_port in
   defp step(intcode, {4, src}) do
-    {:continue, intcode |> write(input(intcode, src)) |> advance_counter(2)}
+    {:write, intcode |> advance_counter(2), src}
   end
 
   # Op: jump_if_true in in
