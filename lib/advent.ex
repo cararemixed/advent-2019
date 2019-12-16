@@ -165,4 +165,16 @@ defmodule Advent do
     {:ok, image} = SpaceImageFormat.load_image(data, 25, 6)
     SpaceImageFormat.render(image)
   end
+
+  def star17 do
+    {:ok, diag} = DiagnosticSystem.start(user_input: 1, program: "boost", accumulate: true)
+    :ok = DiagnosticSystem.run(diag)
+    DiagnosticSystem.output(diag)
+  end
+
+  def star18 do
+    {:ok, diag} = DiagnosticSystem.start(user_input: 2, program: "boost")
+    :ok = DiagnosticSystem.run(diag)
+    DiagnosticSystem.output(diag)
+  end
 end

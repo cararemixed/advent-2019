@@ -12,7 +12,7 @@ defmodule Intcode do
 
   @type t :: %Intcode{}
 
-  defstruct memory: %{0 => 99}, counter: 0
+  defstruct memory: %{0 => 99}, counter: 0, base: 0
 
   @spec load_program(binary | {:path, binary}) :: Intcode.t()
   def load_program(name) do
@@ -38,20 +38,19 @@ defmodule Intcode do
       {:continue, intcode} -> run(intcode)
       {:halt, intcode} -> {:halt, intcode}
       {:read, intcode, {:address, address}} -> {:read, intcode, address}
+      {:read, intcode, {:relative, address}} -> {:read, intcode, address + intcode.base}
       {:write, intcode, output} -> {:write, intcode, input(intcode, output)}
     end
   end
 
   def peek(intcode, address) do
     case intcode.memory[address] do
-      nil -> raise(ArgumentError, "tried to read uninitialized memory address: #{address}")
+      nil -> 0
       value -> value
     end
   end
 
   def poke(intcode, address, value) do
-    # Use put to allow any address to be used
-    # even if it was beyond the program size.
     %{intcode | memory: Map.put(intcode.memory, address, value)}
   end
 
@@ -111,6 +110,11 @@ defmodule Intcode do
     {:continue, intcode |> output(dest, bit) |> advance_counter(4)}
   end
 
+  # Op: add_to_base in
+  defp step(intcode, {9, delta}) do
+    {:continue, %{(intcode |> advance_counter(2)) | base: intcode.base + input(intcode, delta)}}
+  end
+
   # Op: halt
   defp step(intcode, {99}) do
     {:halt, intcode}
@@ -118,8 +122,10 @@ defmodule Intcode do
 
   defp input(intcode, {:address, addr}), do: peek(intcode, addr)
   defp input(_intocde, {:immediate, imm}), do: imm
+  defp input(intcode, {:relative, addr}), do: peek(intcode, addr + intcode.base)
 
   defp output(intcode, {:address, addr}, imm), do: poke(intcode, addr, imm)
+  defp output(intcode, {:relative, addr}, imm), do: poke(intcode, addr + intcode.base, imm)
 
   # Decode op integers. Each operation will include
   # the expected number of operands. It is assumed
@@ -135,7 +141,7 @@ defmodule Intcode do
       cond do
         op in [1, 2, 7, 8] -> 1..3
         op in [5, 6] -> 1..2
-        op in [3, 4] -> [1]
+        op in [3, 4, 9] -> [1]
         op == 99 -> []
         true -> raise(RuntimeError, "unknown operation: #{op}")
       end
@@ -147,6 +153,7 @@ defmodule Intcode do
         case decode_mode(modes, offset) do
           0 -> {:address, arg}
           1 -> {:immediate, arg}
+          2 -> {:relative, arg}
         end
       end
 
@@ -156,7 +163,7 @@ defmodule Intcode do
   defp decode_mode(modes, 1), do: rem(modes, 10)
 
   defp decode_mode(modes, offset) do
-    rem(div(modes, 10 * (offset - 1)), 10 * offset)
+    decode_mode(div(modes, 10), offset - 1)
   end
 
   defp advance_counter(intcode, n) do

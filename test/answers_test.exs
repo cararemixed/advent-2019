@@ -71,4 +71,12 @@ defmodule AnswersTest do
            ###   ##    #  #### #    \n\
            """
   end
+
+  test "star 17" do
+    assert Advent.star17() == [2_457_252_183]
+  end
+
+  test "star 18" do
+    assert Advent.star18() == 70634
+  end
 end

@@ -95,7 +95,7 @@ defmodule DiagnosticSystem do
     1001
   """
 
-  defstruct [:intcode, :user_input, :output]
+  defstruct [:intcode, :user_input, :output, :accumulate]
 
   def start(opts) do
     :gen_statem.start_link(DiagnosticSystem, opts, [])
@@ -118,13 +118,15 @@ defmodule DiagnosticSystem do
   def init(opts) do
     intcode =
       case opts[:code] do
-        nil -> Intcode.load_program("diagnose")
+        nil -> Intcode.load_program(opts[:program] || "diagnose")
         code -> Intcode.load_code(code)
       end
 
     data = %DiagnosticSystem{
       intcode: intcode,
-      user_input: opts[:user_input]
+      user_input: opts[:user_input],
+      output: if(opts[:accumulate], do: [], else: nil),
+      accumulate: opts[:accumulate]
     }
 
     {:ok, :running, data}
@@ -137,7 +139,11 @@ defmodule DiagnosticSystem do
   end
 
   def handle_event({:call, from}, :output, :running, data) do
-    {:keep_state, data, [{:reply, from, data.output}]}
+    if data.accumulate do
+      {:keep_state, data, [{:reply, from, Enum.reverse(data.output)}]}
+    else
+      {:keep_state, data, [{:reply, from, data.output}]}
+    end
   end
 
   defp run_until_halt(data) do
@@ -147,7 +153,11 @@ defmodule DiagnosticSystem do
         run_until_halt(%{data | intcode: intcode})
 
       {:write, intcode, output} ->
-        run_until_halt(%{data | intcode: intcode, output: output})
+        if data.accumulate do
+          run_until_halt(%{data | intcode: intcode, output: [output | data.output]})
+        else
+          run_until_halt(%{data | intcode: intcode, output: output})
+        end
 
       {:halt, intcode} ->
         {:ok, %{data | intcode: intcode}}
